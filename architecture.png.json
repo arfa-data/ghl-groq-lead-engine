@@ -1,0 +1,176 @@
+{
+  "name": "My workflow 3",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "e30f6526-6747-428d-ae98-f6bf2b25ed5b",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "17527d69-7666-444b-a5ff-ccb7c1a9cb9a",
+      "name": "Webhook",
+      "webhookId": "e30f6526-6747-428d-ae98-f6bf2b25ed5b"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an expert lead qualification assistant.\n\nAnalyze the following lead payload:\nName: {{ $json.body.first_name }} {{ $json.body.last_name }}\nEmail: {{ $json.body.email }}\nBudget: {{ $json.body[\"Monthly Marketing Budget\"] || $json.body.budget }}\n\nCriteria:\n- HIGH_INTENT: Budget is $5,000 or more.\n- LOW_INTENT: Budget is under $5,000.\n\nReturn ONLY a valid JSON object in this exact format:\n{\n  \"qualification\": \"HIGH_INTENT\",\n  \"reason\": \"Budget of 15000 exceeds threshold.\"\n}\nCRITICAL: Respond ONLY with valid raw JSON. Do not include any introductory commentary, notes, or markdown backticks.",
+        "messages": {
+          "messageValues": [
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=You are an expert lead qualification assistant.  Analyze the following lead payload: Name: {{ $json.body.first_name }} {{ $json.body.last_name }} Email: {{ $json.body.email }} Budget: {{ $json.body[\"Monthly Marketing Budget\"] || $json.body.budget }}  Criteria: - HIGH_INTENT: Budget is $5,000 or more. - LOW_INTENT: Budget is under $5,000.  Return ONLY a valid JSON object in this exact format: {   \"qualification\": \"HIGH_INTENT\",   \"reason\": \"Budget of 15000 exceeds threshold.\" }"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        208,
+        0
+      ],
+      "id": "83b67e34-8bdb-4c59-9361-7b16042de7b8",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        624,
+        0
+      ],
+      "id": "c228024a-d028-4e84-924e-63f5451a5dd3",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "NGTYZOUVfJNlK2g2",
+          "name": "Groq account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.text.includes('\"HIGH_INTENT\"') ? 'HIGH_INTENT' : 'LOW_INTENT' }}",
+                    "rightValue": "HIGH_INTENT",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "1de73ee4-a63c-4bc2-9dd2-d85a11d616a1"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "fe6c54e5-8fff-4e26-bdd3-d3ed940597f3",
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        704,
+        144
+      ],
+      "id": "063c7166-ca1b-454c-9e30-031701ac97a5",
+      "name": "Switch"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "7a15b40b-74c3-4190-bf48-ef64bcc9cfdb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "724a800752783a9005a6df0f01feaf31ea3d89d5a507495c9c35b9e95d6ce76b"
+  },
+  "nodeGroups": [],
+  "id": "xldQvDYzmZV3ODBs",
+  "tags": []
+}
